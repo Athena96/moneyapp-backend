@@ -1,12 +1,12 @@
 
 
-import { lambdaHandler } from "../functions/function";
+import { handler } from "../functions/apiRouter";
 
 
 describe('Unit test for app', function () {
     it('test handler', async () => {
 
-        const res = await lambdaHandler(null,null);
-        expect(res).toEqual('Success');
+        const res = await handler(null,null);
+        expect(res).toEqual("done");
     });
 });
