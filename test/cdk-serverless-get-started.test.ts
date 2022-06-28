@@ -1,3 +1,12 @@
-import { expect as expectCDK, haveResource } from "@aws-cdk/assert";
-import * as cdk from "@aws-cdk/core";
-import * as CdkServerlessGetStarted from "../lib/cdk-serverless-get-started-stack";
+
+
+import { lambdaHandler } from "../functions/function";
+
+
+describe('Unit test for app', function () {
+    it('test handler', async () => {
+
+        const res = await lambdaHandler(null,null);
+        expect(res).toEqual('Success');
+    });
+});

@@ -14,9 +14,9 @@ export class CdkServerlessGetStartedStack extends cdk.Stack {
 
     // lambda function
     const dynamoLambda = new lambda.Function(this, "DynamoLambdaHandler", {
-      runtime: lambda.Runtime.NODEJS_12_X,
+      runtime: lambda.Runtime.NODEJS_16_X,
       code: lambda.Code.asset("functions"),
-      handler: "function.handler",
+      handler: "function.lambdaHandler",
       environment: {
         HELLO_TABLE_NAME: table.tableName,
       },
