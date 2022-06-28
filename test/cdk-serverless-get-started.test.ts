@@ -1,6 +1,6 @@
 
 
-import { handler } from "../functions/apiRouter";
+import { handler } from "../src/handlers/apiRouter";
 
 
 describe('Unit test for app', function () {
