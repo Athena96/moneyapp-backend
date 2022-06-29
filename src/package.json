@@ -12,22 +12,14 @@
         "cdk": "cdk"
     },
     "devDependencies": {
-        "@aws-cdk/assert": "1.50.0",
         "@types/aws-lambda": "^8.10.92",
-        "@types/jest": "^25.2.1",
         "@types/node": "10.17.5",
-        "aws-cdk": "1.50.0",
-        "esbuild": "^0.14.47",
-        "jest": "^25.5.0",
-        "ts-jest": "^25.3.1",
         "ts-node": "^8.1.0",
         "typescript": "~3.7.2"
     },
     "dependencies": {
-        "@aws-cdk/aws-apigateway": "^1.161.0",
-        "@aws-cdk/aws-dynamodb": "^1.161.0",
-        "@aws-cdk/aws-lambda": "^1.161.0",
-        "@aws-cdk/core": "1.161.0",
-        "aws-cdk-lib": "^2.29.1"
+        "aws-sdk": "^2.1116.0",
+        "finnhub": "^1.2.13",
+        "gaussian": "^1.2.0"
     }
 }
