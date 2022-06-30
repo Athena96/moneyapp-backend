@@ -41,3 +41,9 @@ cdk destroy
 
 - Video with more details:
 - Launch blog post:
+
+
+
+```
+npm run build && cdk synth && cdk deploy
+```

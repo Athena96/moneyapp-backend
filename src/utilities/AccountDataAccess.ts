@@ -1,6 +1,6 @@
 
 import { DynamoDB } from 'aws-sdk';
-import { Account } from '../Models/Account';
+import { Account } from '../models/Account';
 import { DynamoDBHelper } from './DynamoDBHelper';
 
 export class AccountDataAccess {

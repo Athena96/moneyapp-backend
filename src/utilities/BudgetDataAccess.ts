@@ -1,9 +1,9 @@
 
-import { Budget } from '../Models/Budget';
+import { Budget } from '../models/Budget';
 import { DynamoDB } from 'aws-sdk';
 import { DynamoDBHelper } from './DynamoDBHelper';
-import { Category } from '../Models/Category';
-import { CategoryTypes } from '../Models/CategoryTypes';
+import { Category } from '../models/Category';
+import { CategoryTypes } from '../models/CategoryTypes';
 
 
 export class BudgetDataAccess {

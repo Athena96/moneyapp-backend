@@ -1,9 +1,9 @@
 
-import { Event } from '../Models/Event';
+import { Event } from '../models/Event';
 import { DynamoDB } from 'aws-sdk';
 import { DynamoDBHelper } from './DynamoDBHelper';
-import { Category } from '../Models/Category';
-import { CategoryTypes } from '../Models/CategoryTypes';
+import { Category } from '../models/Category';
+import { CategoryTypes } from '../models/CategoryTypes';
 
 
 export class EventDataAccess {

@@ -1,4 +1,6 @@
 
+console.log('init1');
+
 import { UserType } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 import { AccountDataAccess } from '../utilities/AccountDataAccess';
 import { AssetDataAccess } from '../utilities/AssetDataAccess';
@@ -17,6 +19,9 @@ import { getCognitoPoolId } from '../utilities/helpers';
 import { SimulationStatus } from '../models/SimulationTypes';
 import { CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk';
 
+console.log('init2');
+
+
 const ddbClient = new DynamoDB({ region: process.env.AWS_REGION });
 const cognitoClient = new CognitoIdentityServiceProvider({ region: process.env.AWS_REGION });
 const dynamoDBHelper = new DynamoDBHelper(ddbClient);
@@ -26,9 +31,8 @@ const COGNITO_POOL_ID = getCognitoPoolId();
 
 export const handler = async (event: APIGatewayEvent | null, context: Context | null): Promise<APIGatewayProxyResult | void | String> => {
     
-    if (!event && !context) {
-        return "done"
-    }
+  
+    console.log('handler');
 
     let users: UserType[] = [];
     try {

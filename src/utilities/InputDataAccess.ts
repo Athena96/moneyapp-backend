@@ -1,5 +1,5 @@
 
-import { Input } from '../Models/Input';
+import { Input } from '../models/Input';
 import { DynamoDB } from 'aws-sdk';
 import { DynamoDBHelper } from './DynamoDBHelper';
 

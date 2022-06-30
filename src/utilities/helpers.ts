@@ -1,6 +1,6 @@
-import { Account } from "../Models/Account";
-import { Budget } from "../Models/Budget";
-import { Event } from "../Models/Event";
+import { Account } from "../models/Account";
+import { Budget } from "../models/Budget";
+import { Event } from "../models/Event";
 import { MonteCarloRowData, RowData } from "./MonteCarlo";
 
 export function getCognitoPoolId(): string {

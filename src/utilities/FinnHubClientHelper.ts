@@ -1,4 +1,4 @@
-import { Asset } from "../Models/Asset";
+import { Asset } from "../models/Asset";
 
 
 export type ComputedAsset = {

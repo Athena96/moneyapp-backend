@@ -10,7 +10,8 @@ enum HttpMethod {
 
 
 const lambdaClient = new Lambda({ region: process.env.AWS_REGION });
-
+const DELETE_FUNCTION_NAME = process.env.DELETE_FUNCTION_NAME!;
+const POST_FUNCTION_NAME = process.env.POST_FUNCTION_NAME!;
 
 export const handler = async (event: APIGatewayEvent | null, context: Context | null): Promise<APIGatewayProxyResult | String> => {
     console.log("spendingApiRouter");
@@ -25,7 +26,23 @@ export const handler = async (event: APIGatewayEvent | null, context: Context | 
         return {
             statusCode: 500,
             body: JSON.stringify({
-                message: 'failed',
+                message: 'failed: no input email',
+            }),
+            headers: {
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET,DELETE"
+            }
+        };
+    }
+
+    const inputCommand = event?.queryStringParameters?.command;
+    console.log('inputCommand ' + inputCommand)
+    if (!inputCommand) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                message: 'failed: no input command',
             }),
             headers: {
                 "Access-Control-Allow-Headers": "Content-Type",
@@ -39,30 +56,30 @@ export const handler = async (event: APIGatewayEvent | null, context: Context | 
     switch (method) {
         case HttpMethod[HttpMethod.DELETE]:
             console.log(`HttpMethod.DELETE`)
-            console.log(`calling ${process.env.DELETE_FUNCTION_NAME!}`)
-            // await lambdaClient.invoke({
-            //     FunctionName: process.env.DELETE_FUNCTION_NAME!,
-            //     InvocationType: "Event",
-            //     Payload: JSON.stringify({
-            //         email: inputEmail
-            //     })
-            // }).promise();
+            console.log(`calling ${DELETE_FUNCTION_NAME}`)
+            await lambdaClient.invoke({
+                FunctionName: DELETE_FUNCTION_NAME,
+                InvocationType: "Event",
+                Payload: JSON.stringify({
+                    email: inputEmail,
+                    deleteCommand: inputCommand
+                })
+            }).promise()
             console.log(`invoked lamnbda.`)
             break;
         case HttpMethod[HttpMethod.POST]:
             console.log(`HttpMethod.POST`)
-            console.log(`calling ${process.env.POST_FUNCTION_NAME!}`)
-            // await lambdaClient.invoke({
-            //     FunctionName: process.env.POST_FUNCTION_NAME!,
-            //     InvocationType: "Event",
-            //     Payload: JSON.stringify({
-            //         email: inputEmail
-            //     })
-            // }).promise();
+            console.log(`calling ${POST_FUNCTION_NAME}`)
+            await lambdaClient.invoke({
+                FunctionName: POST_FUNCTION_NAME,
+                InvocationType: "Event",
+                Payload: JSON.stringify({
+                    email: inputEmail,
+                    postCommand: inputCommand
+                })
+            }).promise();
             console.log(`invoked lamnbda.`)
-
             break;
-
     }
 
 

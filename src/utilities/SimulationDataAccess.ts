@@ -1,10 +1,10 @@
 
-import { Simulation } from '../Models/Simulation';
+import { Simulation } from '../models/Simulation';
 import { DynamoDB } from 'aws-sdk';
 import { DynamoDBHelper } from './DynamoDBHelper';
 import { MonteCarloRowData } from './MonteCarlo';
 import { tableForType } from './constants';
-import { SimulationStatus } from '../Models/SimulationTypes';
+import { SimulationStatus } from '../models/SimulationTypes';
 
 export class SimulationDataAccess {
 

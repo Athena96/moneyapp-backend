@@ -1,10 +1,10 @@
-import { Account } from "../Models/Account";
-import { Budget } from "../Models/Budget";
-import { Event } from "../Models/Event";
-import { CategoryTypes } from "../Models/CategoryTypes";
-import { Input } from "../Models/Input";
-import { Asset } from "../Models/Asset";
-import { Simulation } from "../Models/Simulation";
+import { Account } from "../models/Account";
+import { Budget } from "../models/Budget";
+import { Event } from "../models/Event";
+import { CategoryTypes } from "../models/CategoryTypes";
+import { Input } from "../models/Input";
+import { Asset } from "../models/Asset";
+import { Simulation } from "../models/Simulation";
 import {
     getActiveBudgets,
     getActiveEvents,

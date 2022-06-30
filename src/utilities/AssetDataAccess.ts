@@ -1,5 +1,5 @@
 
-import { Asset } from '../Models/Asset';
+import { Asset } from '../models/Asset';
 import { DynamoDB } from 'aws-sdk';
 import { DynamoDBHelper } from './DynamoDBHelper';
 
