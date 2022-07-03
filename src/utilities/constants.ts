@@ -1,5 +1,4 @@
 
-
 export const tableForType: any = {
     Account: 'Account-s3aq7ikxjbecpn4jn4c63v67pi-dev',
     Budget: 'Budget-s3aq7ikxjbecpn4jn4c63v67pi-dev',

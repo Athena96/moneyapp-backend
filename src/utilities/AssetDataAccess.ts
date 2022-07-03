@@ -2,6 +2,7 @@
 import { Asset } from '../models/Asset';
 import { DynamoDB } from 'aws-sdk';
 import { DynamoDBHelper } from './DynamoDBHelper';
+import { tableForType } from './constants';
 
 export class AssetDataAccess {
 
@@ -19,6 +20,27 @@ export class AssetDataAccess {
         let fetchedAssets: Asset[] = [];
         fetchedAssets = await dynamoDBHelper.fetchAllOf<Asset>('Asset', this.assetsMapperFunction, simulationId);
         return fetchedAssets;
+    }
+
+    static async deleteDataWithSimulationId(dynamoDBHelper: DynamoDBHelper, simulationId: string) {
+        const assets = await this.fetchAssets(dynamoDBHelper, simulationId);
+        if (!assets) {
+            console.log(`no assets data to delete, skipping`);
+            return;
+        }
+        console.log(`fetched assets to delete: ${JSON.stringify(assets)}`)
+
+        for (const asset of assets) {
+            await dynamoDBHelper.deleteObject<Asset>({
+                Key: {
+                    "id": {
+                        S: asset.id
+                    }
+                },
+                ReturnValues: "NONE",
+                TableName: tableForType['Asset']
+            })
+        }
     }
 
 }

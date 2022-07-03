@@ -1,6 +1,9 @@
 
 import { UserType } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 import CognitoIdentityServiceProvider = require('aws-sdk/clients/cognitoidentityserviceprovider');
+import { getCognitoPoolId } from './helpers';
+
+const COGNITO_POOL_ID = getCognitoPoolId();
 
 export class CognitoHelper {
     private cognitoClient: CognitoIdentityServiceProvider;
@@ -32,6 +35,13 @@ export class CognitoHelper {
             }
         }
         throw new Error('could not get email')
+    }
+
+    public async deleteUser(user: string) {
+        await this.cognitoClient.adminDeleteUser({
+            UserPoolId: COGNITO_POOL_ID,
+            Username: user
+        }).promise();
     }
 
 }

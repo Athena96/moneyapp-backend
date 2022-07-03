@@ -19,7 +19,6 @@ export class DynamoDBHelper {
         let allData: Type[] = []
 
         do {
-            // #todo where simulation === the selected simulation.
            data = await this.ddbClient.scan({
                 TableName: tableForType[dataType],
                 Limit: 25,
@@ -42,6 +41,18 @@ export class DynamoDBHelper {
         } while(key);
 
         return allData;
+    }
+
+    async deleteObject<Type>(input: DynamoDB.DeleteItemInput): Promise<void> {
+
+        console.log(`DELETE: ${JSON.stringify(input)}`);
+        try {
+            await this.ddbClient.deleteItem(input).promise();
+
+        } catch (e) {
+            console.log('failed to delete item')
+            console.error(e);
+        }
     }
 
        

@@ -4,6 +4,8 @@ import { DynamoDB } from 'aws-sdk';
 import { DynamoDBHelper } from './DynamoDBHelper';
 import { Category } from '../models/Category';
 import { CategoryTypes } from '../models/CategoryTypes';
+import { DataAccess } from './DataAccess';
+import { tableForType } from './constants';
 
 
 export class BudgetDataAccess {
@@ -28,6 +30,27 @@ export class BudgetDataAccess {
         let fetchedBudgets: Budget[] = [];
         fetchedBudgets = await dynamoDBHelper.fetchAllOf<Budget>('Budget', this.budgetsMapperFunction, simulationId);
         return fetchedBudgets;
+    }
+
+    static async deleteDataWithSimulationId(dynamoDBHelper: DynamoDBHelper, simulationId: string) {
+        const budgets = await this.fetchBudgets(dynamoDBHelper, simulationId);
+        if (!budgets) {
+            console.log(`no assets data to delete, skipping`);
+            return;
+        }
+        console.log(`fetched budgets to delete: ${JSON.stringify(budgets)}`)
+
+        for (const budget of budgets) {
+            await dynamoDBHelper.deleteObject<Budget>({
+                Key: {
+                    "id": {
+                        S: budget.id
+                    }
+                },
+                ReturnValues: "NONE",
+                TableName: tableForType['Budget']
+            })
+        }
     }
 
 }

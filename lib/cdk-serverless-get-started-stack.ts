@@ -27,6 +27,20 @@ export class CdkServerlessGetStartedStack extends cdk.Stack {
     postFunctionLambdaRole.addManagedPolicy(
       ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
     );
+
+    const deleteFunctionLambdaRole = new iam.Role(this, 'DeleteFunctionLambdaRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+    });
+    
+    deleteFunctionLambdaRole.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess')
+    );
+    deleteFunctionLambdaRole.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName('AmazonCognitoPowerUser')
+    );
+    deleteFunctionLambdaRole.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
+    );
     
 
     // lambda function
@@ -64,8 +78,9 @@ export class CdkServerlessGetStartedStack extends cdk.Stack {
       code: new lambda.AssetCode('src'),
       handler: "handlers/delete.handler",
       environment: {
-        TEST: "TEST_VA",
+        POOL_ID: "us-west-2_13hsr5Ccs",
       },
+      role: deleteFunctionLambdaRole
     });
 
     // allow apiRouterFunction to invoke deleteFunction and postFunction

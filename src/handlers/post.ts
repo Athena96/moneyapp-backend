@@ -1,7 +1,3 @@
-
-console.log('init1');
-
-import { UserType } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 import { AccountDataAccess } from '../utilities/AccountDataAccess';
 import { AssetDataAccess } from '../utilities/AssetDataAccess';
 import { BudgetDataAccess } from '../utilities/BudgetDataAccess';
@@ -13,42 +9,39 @@ import { InputDataAccess } from '../utilities/InputDataAccess';
 import { MonteCarloInputs, simulate } from '../utilities/MonteCarlo';
 import { formatRowData, getAvgOfAllScenarios, getRepresentativeScenario, dateRange, getSuccessPercent } from '../utilities/helpers';
 import { SimulationDataAccess } from '../utilities/SimulationDataAccess';
-import { CognitoHelper } from '../utilities/CognitoHelper';
-import { Context, APIGatewayProxyResult, APIGatewayEvent } from 'aws-lambda';
-import { getCognitoPoolId } from '../utilities/helpers';
+import { Context } from 'aws-lambda';
 import { SimulationStatus } from '../models/SimulationTypes';
-import { CognitoIdentityServiceProvider, DynamoDB } from 'aws-sdk';
-
-console.log('init2');
+import { DynamoDB } from 'aws-sdk';
 
 
 const ddbClient = new DynamoDB({ region: process.env.AWS_REGION });
-const cognitoClient = new CognitoIdentityServiceProvider({ region: process.env.AWS_REGION });
 const dynamoDBHelper = new DynamoDBHelper(ddbClient);
-const cognitoHelper = new CognitoHelper(cognitoClient);
 const finnhubClient = FinnHubClientHelper.getFinnhubClient();
-const COGNITO_POOL_ID = getCognitoPoolId();
 
-export const handler = async (event: APIGatewayEvent | null, context: Context | null): Promise<APIGatewayProxyResult | void | String> => {
-    
-  
-    console.log('handler');
+export const handler = async (event: any | null, context: Context | null): Promise<void> => {
+    // let users: UserType[] = [];
+    // try {
+    //     users = await cognitoHelper.getUsersInPool(COGNITO_POOL_ID)
+    // } catch (e) {
+    //     throw new Error('could not get users.')
+    // }
 
-    let users: UserType[] = [];
-    try {
-        users = await cognitoHelper.getUsersInPool(COGNITO_POOL_ID)
-    } catch (e) {
-        throw new Error('could not get users.')
+    // {
+    //     email: inputEmail,
+    //     postCommand: inputCommand
+    // }
+
+    const email = event.email;
+    if (!email) {
+        throw new Error('email not sent');
     }
-
-    const userCalledEmail = event?.queryStringParameters?.email || undefined;
-    for (const user of users) {
+    // for (const user of users) {
         // 1. pull events, budgets, inputs, accounts, startDt, endDt, dateim59, retireDate
         let monteCarloInputs: MonteCarloInputs | null = null;
         try {
-            const email = cognitoHelper.getEmail(user);
-            if (userCalledEmail && email !== userCalledEmail)
-                continue;
+            // const email = cognitoHelper.getEmail(user);
+            // if (userCalledEmail && email !== userCalledEmail)
+                // continue;
             console.log('Running Simulation For: ' + email);
             console.log('set Simulation as RUNNING');
             await SimulationDataAccess.markSimulationAsRunning(dynamoDBHelper, email);
@@ -56,17 +49,17 @@ export const handler = async (event: APIGatewayEvent | null, context: Context | 
             const simulation = await SimulationDataAccess.fetchSelectedSimulationForUser(dynamoDBHelper, email);
             if (simulation === null) {
                 console.log('no simulation for user, going to next user');
-                continue;
+                return
             }
             const accounts = await AccountDataAccess.fetchAccounts(dynamoDBHelper, simulation.id);
             if (accounts === null || accounts.length === 0) {
                 console.log('no accounts for user, going to next user');
-                continue;
+                return;
             }
             const budgets = await BudgetDataAccess.fetchBudgets(dynamoDBHelper, simulation.id);
             if (budgets === null || budgets.length === 0) {
                 console.log('no budgets for user, going to next user');
-                continue;
+                return;
             }
             const events = await EventDataAccess.fetchEvents(dynamoDBHelper, simulation.id);
             const input = await InputDataAccess.fetchInputs(dynamoDBHelper, simulation.id);
@@ -109,14 +102,14 @@ export const handler = async (event: APIGatewayEvent | null, context: Context | 
             }
 
             // 4. simulate for 1K steps
-            const dateIm59 = new Date(monteCarloInputs.input.settings.birthday);
+            const dateIm59 = new Date(monteCarloInputs.input.birthday);
             dateIm59.setFullYear(dateIm59.getFullYear() + 59);
-            const endDate = new Date(monteCarloInputs.input.settings.birthday);
+            const endDate = new Date(monteCarloInputs.input.birthday);
             endDate.setFullYear(endDate.getFullYear() + 100);
-            const dateToSlowGroth = new Date(monteCarloInputs.input.settings.birthday);
+            const dateToSlowGroth = new Date(monteCarloInputs.input.birthday);
             dateToSlowGroth.setFullYear(dateToSlowGroth.getFullYear() + 65);
 
-            console.log('allocations: ' + JSON.stringify(monteCarloInputs.input.settings.assetAllocation))
+            console.log('allocations: ' + JSON.stringify(monteCarloInputs.input.assetAllocation))
 
             const dates = dateRange(startDate, endDate);
             const simulations = simulate(
@@ -167,14 +160,9 @@ export const handler = async (event: APIGatewayEvent | null, context: Context | 
             console.log('DONE');
         }
 
-    }
+    // }
 
-    if (userCalledEmail) {
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: 'done',
-            }),
-        };
-    }
+
+        return
+
 };

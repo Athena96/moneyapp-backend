@@ -25,6 +25,31 @@ export class SimulationDataAccess {
         await this.setSimulationStatus(dynamoDBHelper, sim.id, SimulationStatus.Running);
     }
 
+    static async fetchAllSimulationsForUser(dynamoDBHelper: DynamoDBHelper, user: string) {
+        let fetchedSimulations: Simulation[] = [];
+        fetchedSimulations = await dynamoDBHelper.fetchAllOf<Simulation>('Simulation', this.simulationsMapperFunction, null);
+
+        let returnSimulations: Simulation[] = [];
+        for (const sim of fetchedSimulations) {
+            if (sim.user === user) {
+                returnSimulations.push(sim);
+            }
+        }
+        return returnSimulations;
+    }
+
+    static async deleteDataWithSimulationId(dynamoDBHelper: DynamoDBHelper, simulationId: string) {
+        await dynamoDBHelper.deleteObject<Simulation>({
+            Key: {
+                "id": {
+                    S: simulationId
+                }
+            },
+            ReturnValues: "NONE",
+            TableName: tableForType['Simulation']
+        });
+    }
+
     static async fetchSelectedSimulationForUser(dynamoDBHelper: DynamoDBHelper, user: string) {
         let fetchedSimulations: Simulation[] = [];
         fetchedSimulations = await dynamoDBHelper.fetchAllOf<Simulation>('Simulation', this.simulationsMapperFunction, null);

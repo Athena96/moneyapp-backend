@@ -1,6 +1,7 @@
 
 import { DynamoDB } from 'aws-sdk';
 import { Account } from '../models/Account';
+import { tableForType } from './constants';
 import { DynamoDBHelper } from './DynamoDBHelper';
 
 export class AccountDataAccess {
@@ -18,5 +19,25 @@ export class AccountDataAccess {
         let fetchedAccounts: Account[] = [];
         fetchedAccounts = await dynamoDBHelper.fetchAllOf<Account>('Account', this.accountsMapperFunction, simulationId);
         return fetchedAccounts;
+    }
+
+    static async deleteDataWithSimulationId(dynamoDBHelper: DynamoDBHelper, simulationId: string) {
+        const accounts = await this.fetchAccounts(dynamoDBHelper, simulationId);
+        if (!accounts) {
+            console.log(`no account data to delete, skipping`);
+            return;
+        }
+        console.log(`fetched accounts to delete: ${JSON.stringify(accounts)}`)
+        for (const account of accounts) {
+            await dynamoDBHelper.deleteObject<Account>({
+                Key: {
+                    "id": {
+                        S: account.id
+                    }
+                },
+                ReturnValues: "NONE",
+                TableName: tableForType['Account']
+            })
+        }
     }
 }

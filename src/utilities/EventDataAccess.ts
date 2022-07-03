@@ -4,6 +4,7 @@ import { DynamoDB } from 'aws-sdk';
 import { DynamoDBHelper } from './DynamoDBHelper';
 import { Category } from '../models/Category';
 import { CategoryTypes } from '../models/CategoryTypes';
+import { tableForType } from './constants';
 
 
 export class EventDataAccess {
@@ -22,6 +23,28 @@ export class EventDataAccess {
         let fetchedEvents: Event[] = [];
         fetchedEvents = await dynamoDBHelper.fetchAllOf<Event>('Event', this.eventsMapperFunction, simulationId);
         return fetchedEvents;
+    }
+
+    static async deleteDataWithSimulationId(dynamoDBHelper: DynamoDBHelper, simulationId: string) {
+        const events = await this.fetchEvents(dynamoDBHelper, simulationId);
+        
+        if (!events) {
+            console.log(`no events data to delete, skipping`);
+            return;
+        }
+        
+        console.log(`fetched events to delete: ${JSON.stringify(events)}`)
+        for (const event of events) {
+            await dynamoDBHelper.deleteObject<Event>({
+                Key: {
+                    "id": {
+                        S: event.id
+                    }
+                },
+                ReturnValues: "NONE",
+                TableName: tableForType['Event']
+            });
+        }
     }
 
 }

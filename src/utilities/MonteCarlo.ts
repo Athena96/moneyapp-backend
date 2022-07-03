@@ -70,7 +70,7 @@ export function simulate(
     bondVariance: number) {
 
 
-    const startAllocations = monteCarloInputs.input.settings.assetAllocation.startAllocations;
+    const startAllocations = monteCarloInputs.input.assetAllocation.startAllocations;
     const startStocks = parseFloat(startAllocations.equities) / 100.0;
     const startBonds = parseFloat(startAllocations.bonds) / 100.0;
     const startCash = parseFloat(startAllocations.cash) / 100.0;
@@ -78,9 +78,9 @@ export function simulate(
     let assetAllocationOverTime: any[] | null = null;
 
 
-    if (monteCarloInputs.input.settings.assetAllocation.endAllocations) {
+    if (monteCarloInputs.input.assetAllocation.endAllocations) {
         assetAllocationOverTime = [];
-        const endAllocations = monteCarloInputs.input.settings.assetAllocation.endAllocations;
+        const endAllocations = monteCarloInputs.input.assetAllocation.endAllocations;
         const endStocks = parseFloat(endAllocations.equities) / 100.0;
         const endBonds = parseFloat(endAllocations.bonds) / 100.0;
         const endCash = parseFloat(endAllocations.cash) / 100.0;
