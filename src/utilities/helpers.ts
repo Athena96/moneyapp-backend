@@ -39,7 +39,9 @@ export function shuffleArray<T>(array: T[]): T[] {
 export function endedSuccessFully(results: RowData[]) {
     const taxEndingBal = results[results.length - 1].taxBal.replace('$', '');
     const brokerageEndingBal = results[results.length - 1].brokerageBal.replace('$', '');
-    return parseInt(taxEndingBal) > 0 || parseInt(brokerageEndingBal) > 0;
+    const winLose = parseInt(taxEndingBal) > 0 || parseInt(brokerageEndingBal) > 0;
+    console.log(`${winLose ? 'win' : 'LOSE'} taxEndingBal: ${taxEndingBal}  brokerageEndingBal: ${brokerageEndingBal}`);
+    return winLose
 }
 
 export function getSuccessPercent(simulations: RowData[][]) {
@@ -60,9 +62,6 @@ export function getBrokerageAccountWithSmallestNonZeroBalance(accounts: Account[
     let i = 0;
     for (const account of accounts) {
         if (account.taxAdvantaged === 0) {
-            // if (i==0) {
-            //     smallestBal = balances[account.id][(currentDateIndex - 1).toString()];
-            // }
             if (smallestBal === null) {
                 smallestBal = balances[account.id][(currentDateIndex - 1).toString()];
             }
@@ -81,15 +80,14 @@ export function getBrokerageAccountWithSmallestNonZeroBalance(accounts: Account[
 
 export function getTaxAccountWithSmallestNonZeroBalance(accounts: Account[], currentDateIndex: number, balances: any) {
     let idxSmallest = 0;
-    let smallestBal = 0.0;
+    let smallestBal = null;
     let i = 0;
     for (const account of accounts) {
         if (account.taxAdvantaged === 1) {
-            if (i == 0) {
+            if (smallestBal === null) {
                 smallestBal = balances[account.id][(currentDateIndex - 1).toString()];
             }
             const bal: number = balances[account.id][(currentDateIndex - 1).toString()];
-
             if (bal > 0 && bal <= smallestBal) {
                 smallestBal = bal;
                 idxSmallest = i;
@@ -98,7 +96,6 @@ export function getTaxAccountWithSmallestNonZeroBalance(accounts: Account[], cur
         }
         i += 1;
     }
-
     return accounts[idxSmallest]
 }
 

@@ -1,31 +1,38 @@
 
 
-import { handler as apiHandler } from "../src/handlers/apiRouter";
-import { handler as postHandler} from "../src/handlers/post";
-import { handler as deleteHandler} from "../src/handlers/delete";
+
+const runner = require('../src/handlers/post')
+
+// describe('Unit test for app', function () {
+
+//     beforeAll(() => {
+
+//     })
+//     // it('test apiRouter handler', async () => {
+
+//     //     const res = await apiHandler(null,null);
+//     //     expect(res).toEqual("done");
+//     // });
+
+//     it('test post handler', async () => {
+     
+async function run() {
+    const it = 'italianstallion26.21@gmail.com';
+    const jared = 'jaredfranzone@gmail.com';
+
+    const res = await runner.handler({email: it},null);
+}
+run().then(() => {
+    console.log('all done')
+})
+
+//         expect(res).toEqual("done");
+//     }, 600000);
 
 
-describe('Unit test for app', function () {
+//     // it('test delete handler', async () => {
 
-    beforeAll(() => {
-        process.env['POOL_ID'] = "test"
-
-    })
-    it('test apiRouter handler', async () => {
-
-        const res = await apiHandler(null,null);
-        expect(res).toEqual("done");
-    });
-
-    it('test post handler', async () => {
-        const res = await postHandler(null,null);
-        expect(res).toEqual("done");
-    });
-
-
-    it('test delete handler', async () => {
-
-        const res = await deleteHandler(null,null);
-        expect(res).toEqual("done");
-    });
-});
+//     //     const res = await deleteHandler(null,null);
+//     //     expect(res).toEqual("done");
+//     // });
+// });

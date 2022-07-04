@@ -18,7 +18,7 @@ const ddbClient = new DynamoDB({ region: process.env.AWS_REGION });
 const dynamoDBHelper = new DynamoDBHelper(ddbClient);
 const finnhubClient = FinnHubClientHelper.getFinnhubClient();
 
-export const handler = async (event: any | null, context: Context | null): Promise<void> => {
+export const handler = async (event: any | null, context: Context | null): Promise<string | void> => {
     // let users: UserType[] = [];
     // try {
     //     users = await cognitoHelper.getUsersInPool(COGNITO_POOL_ID)
@@ -31,10 +31,8 @@ export const handler = async (event: any | null, context: Context | null): Promi
     //     postCommand: inputCommand
     // }
 
-    const email = event.email;
-    if (!email) {
-        throw new Error('email not sent');
-    }
+    const email = event.email!;
+
     // for (const user of users) {
         // 1. pull events, budgets, inputs, accounts, startDt, endDt, dateim59, retireDate
         let monteCarloInputs: MonteCarloInputs | null = null;
@@ -163,6 +161,6 @@ export const handler = async (event: any | null, context: Context | null): Promi
     // }
 
 
-        return
+        return "done"
 
 };
