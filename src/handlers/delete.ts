@@ -4,7 +4,6 @@ import { DeleteEvent, DeleteManager } from '../managers/delete/deleteManager';
 import { CognitoHelper } from '../utilities/CognitoHelper';
 import { DynamoDBHelper } from '../utilities/DynamoDBHelper';
 
-const deleteManager = new DeleteManager();
 const cognitoClient = new CognitoIdentityServiceProvider({ region: process.env.AWS_REGION });
 const ddbClient = new DynamoDB({ region: process.env.AWS_REGION });
 const dynamoDBHelper = new DynamoDBHelper(ddbClient);
@@ -14,7 +13,7 @@ export const handler = async (event: DeleteEvent, context: Context | null): Prom
     console.log("delete handler");
     console.log(JSON.stringify(event));
     try {
-        await deleteManager.delete(event, dynamoDBHelper, cognitoHelper)
+        await DeleteManager.delete(event, dynamoDBHelper, cognitoHelper)
     } catch (e) {
         console.error(e);
     }

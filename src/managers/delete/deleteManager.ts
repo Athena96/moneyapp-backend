@@ -15,7 +15,7 @@ export type DeleteEvent = {
 
 export class DeleteManager {
 
-    async delete(event: DeleteEvent, dynamoDBHelper: DynamoDBHelper, cognitoHelper: CognitoHelper) {
+    static async delete(event: DeleteEvent, dynamoDBHelper: DynamoDBHelper, cognitoHelper: CognitoHelper) {
         console.log("delete manager")
         console.log(`event: ${JSON.stringify(event)}`)
         

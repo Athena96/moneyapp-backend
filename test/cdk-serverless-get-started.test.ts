@@ -1,8 +1,8 @@
 
 
 
-const runner = require('../src/handlers/post')
 
+const postHandler = require('../src/handlers/post')
 // describe('Unit test for app', function () {
 
 //     beforeAll(() => {
@@ -20,7 +20,7 @@ async function run() {
     const it = 'italianstallion26.21@gmail.com';
     const jared = 'jaredfranzone@gmail.com';
 
-    const res = await runner.handler({email: it},null);
+    const res = await postHandler.handler({email: it, postCommand: "RunSimulation" }, null);
 }
 run().then(() => {
     console.log('all done')
