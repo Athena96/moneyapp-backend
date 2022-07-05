@@ -8,11 +8,11 @@ import { Simulation } from "../models/Simulation";
 import {
     getActiveBudgets,
     getActiveEvents,
-    getBrokerageAccountWithSmallestNonZeroBalance,
-    getTaxAccountWithSmallestNonZeroBalance,
+    getAccountWithSmallestNonZeroBalance,
     isMoneyInAnyTaxAccounts,
     shuffleArray
 } from "./helpers";
+import { BalanceData } from "../models/MonteCarloTypes";
 
 export type MonteCarloInputs = {
     accounts: Account[],
@@ -59,10 +59,8 @@ export function getNormalDistributionOfReturns(size: number, mean: number, varia
 
 export function simulate(
     monteCarloInputs: MonteCarloInputs,
-    balances: any,
+    balances: BalanceData,
     dates: Date[],
-    dateIm59: Date,
-    dateToSlowGroth: Date,
     steps: number,
     vtiMean: number,
     bondMean: number,
@@ -75,6 +73,7 @@ export function simulate(
     const startBonds = parseFloat(startAllocations.bonds) / 100.0;
     const startCash = parseFloat(startAllocations.cash) / 100.0;
 
+    // #todo noany
     let assetAllocationOverTime: any[] | null = null;
 
 
@@ -96,6 +95,8 @@ export function simulate(
             const stockDiff = (startStocks - endStocks) / (totalSteps);
             const bondDiff = (startBonds - endBonds) / (totalSteps);
             const cashDiff = (startCash - endCash) / (totalSteps);
+            
+            // #noany
             const prev: any = assetAllocationOverTime[step-1];
             assetAllocationOverTime.push({
                 'stock': prev['stock'] - stockDiff,           
@@ -105,9 +106,14 @@ export function simulate(
         }
     }
 
+    const dateIm59 = new Date(monteCarloInputs.input.birthday);
+    dateIm59.setFullYear(dateIm59.getFullYear() + 59);
     const setOfSimulations: RowData[][] = [];
     for (let i = 0; i < steps; i += 1) {
-
+        const newBalData: BalanceData = {}
+        for (const k of Object.keys(balances)) {
+            newBalData[k] = [...balances[k]]
+        }
 
         let distributionOfReturns: number[] = []
         if (assetAllocationOverTime) {
@@ -137,19 +143,17 @@ export function simulate(
         // });
 
         setOfSimulations.push(projectWithReturn(
-            balances,
+            newBalData,
             monteCarloInputs,
             dateIm59,
             dates,
-            dateToSlowGroth,
-            [],
             distributionOfReturns));
     }
 
     return setOfSimulations;
 }
 
-export function projectWithReturn(balances: any, monteCarloInputs: MonteCarloInputs, dateIm59: Date, dates: Date[], dateToSlowGroth: Date, slowGrowRates: number[], growRates: number[]) {
+export function projectWithReturn(balances: BalanceData, monteCarloInputs: MonteCarloInputs, dateIm59: Date, dates: Date[], growRates: number[]) {
     const events = monteCarloInputs.events || [];
     const budgets = monteCarloInputs.budgets || [];
     const accounts = monteCarloInputs.accounts;
@@ -179,17 +183,15 @@ export function projectWithReturn(balances: any, monteCarloInputs: MonteCarloInp
 
             if (i > 0) {
                 // grow
-                balances[account.id][(i).toString()] = balances[account.id][(i - 1).toString()] > 0 ?
-                    balances[account.id][(i - 1).toString()] + growth * balances[account.id][(i - 1).toString()] :
-                    0.0;
+                balances[account.id].push(balances[account.id][i-1] > 0 ? balances[account.id][i-1] + growth * balances[account.id][i-1] : 0.0);
 
                 // contribute or use
                 if (incomeExpenseDelta > 0) {
-                    balances[account.id][(i).toString()] += ((account.contributionPercent / 100.0) * incomeExpenseDelta)
+                    balances[account.id][i] += ((account.contributionPercent / 100.0) * incomeExpenseDelta)
                 } else {
                     if (use(account, accounts, date, i, dateIm59, balances)) {
                         accntUsed = account.name;
-                        balances[account.id][(i).toString()] += incomeExpenseDelta
+                        balances[account.id][i] += incomeExpenseDelta
                     }
                 }
             }
@@ -200,15 +202,11 @@ export function projectWithReturn(balances: any, monteCarloInputs: MonteCarloInp
                 eventsApplied.push(event);
                 const isExpense = event.type === CategoryTypes.Expense;
                 eventDesc += ` ${isExpense ? '-' : '+'}$${event.category.getValue()}`;
-                balances[account.id][(i).toString()] += ((isExpense ? -1 : 1) * event.category.getValue());
+                balances[account.id][i] += ((isExpense ? -1 : 1) * event.category.getValue());
                 eventDesc += ` | `;
             }
 
-            if (account.taxAdvantaged === 1) {
-                taxBal += Number(balances[account.id][(i).toString()])
-            } else {
-                brokBal += Number(balances[account.id][(i).toString()])
-            }
+            account.taxAdvantaged === 1 ? taxBal += balances[account.id][i] :  brokBal += balances[account.id][i];
         }
 
         data.push({
@@ -248,20 +246,20 @@ export function projectWithReturn(balances: any, monteCarloInputs: MonteCarloInp
 //     return data;
 // }
 
-export function use(account: Account, accounts: Account[], currentDate: Date, currentDateIndex: number, dateIm59: Date, balances: any) {
+export function use(account: Account, accounts: Account[], currentDate: Date, currentDateIndex: number, dateIm59: Date, balances: BalanceData) {
     if (currentDate < dateIm59) {
-        let currAcnt = getBrokerageAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances);
+        let currAcnt = getAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances, 0);
         if (currAcnt === null) {
-            currAcnt = getTaxAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances); // could be zero for sake of math.
+            currAcnt = getAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances, 1); // could be zero for sake of math.
         }
         return currAcnt.name === account.name;
     } else {
         // use 401k till empty
         if (isMoneyInAnyTaxAccounts(accounts, currentDateIndex, balances)) {
-            const acnt = getTaxAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances);
+            const acnt = getAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances, 1);
             return acnt.name === account.name;
         } else {
-            const brokAcnt = getBrokerageAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances);
+            const brokAcnt = getAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances, 0);
             return brokAcnt.name === account.name;
         }
     }

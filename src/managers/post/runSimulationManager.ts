@@ -11,6 +11,7 @@ import { formatRowData, getAvgOfAllScenarios, getRepresentativeScenario, dateRan
 import { SimulationDataAccess } from '../../utilities/SimulationDataAccess';
 import { SimulationStatus } from '../../models/SimulationTypes';
 import { PostEvent } from './postManager';
+import { BalanceData } from '../../models/MonteCarloTypes';
 
 
 
@@ -80,7 +81,7 @@ export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHe
 
             // 3. compute starting balance
             const startDate = new Date();
-            const balances: any = {};
+            const balances: BalanceData = {};
             for (const account of monteCarloInputs.accounts) {
                 const startingBal = computedAssets.map((computedAsset: ComputedAsset) => {
                     if (computedAsset.asset.account === account.name) {
@@ -90,18 +91,12 @@ export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHe
                     }
                 }).reduce((prev, curr) => prev + curr, 0);
                 console.log(`${account.name} - $${startingBal.toFixed(2)}`)
-                balances[account.id] = {
-                    0: startingBal
-                }
+                balances[account.id] = [startingBal];
             }
 
             // 4. simulate for 1K steps
-            const dateIm59 = new Date(monteCarloInputs.input.birthday);
-            dateIm59.setFullYear(dateIm59.getFullYear() + 59);
             const endDate = new Date(monteCarloInputs.input.birthday);
             endDate.setFullYear(endDate.getFullYear() + 100);
-            const dateToSlowGroth = new Date(monteCarloInputs.input.birthday);
-            dateToSlowGroth.setFullYear(dateToSlowGroth.getFullYear() + 65);
 
             console.log('allocations: ' + JSON.stringify(monteCarloInputs.input.assetAllocation))
 
@@ -110,8 +105,6 @@ export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHe
                 monteCarloInputs,
                 balances,
                 dates,
-                dateIm59,
-                dateToSlowGroth,
                 STEPS,
                 (VTI_MEAN - (INFLATION + FEES)),
                 (BND_MEAN - (INFLATION + FEES)),

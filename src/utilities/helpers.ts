@@ -1,7 +1,41 @@
 import { Account } from "../models/Account";
 import { Budget } from "../models/Budget";
 import { Event } from "../models/Event";
+import { BalanceData } from "../models/MonteCarloTypes";
 import { MonteCarloRowData, RowData } from "./MonteCarlo";
+
+
+
+export function getAccountWithSmallestNonZeroBalance(accounts: Account[], currentDateIndex: number, balances: BalanceData, taxOrBrok: number) {
+    let idxSmallest = 0;
+    let smallestBal = null;
+    let i = 0;
+    
+    const taxAccounts = accounts.filter((account: Account) => {
+        return account.taxAdvantaged === taxOrBrok
+    })
+
+    for (const account of taxAccounts) {
+        const bal: number = balances[account.id][currentDateIndex - 1];
+        if (bal > 0) {
+            if (smallestBal === null) {
+                smallestBal = bal;
+                idxSmallest = i;
+                continue;
+            }
+
+            if (bal <= smallestBal) {
+                smallestBal = bal;
+                idxSmallest = i;
+            }
+        }
+        
+        i += 1;
+    }
+
+    return taxAccounts[idxSmallest];
+}
+
 
 export function getCognitoPoolId(): string {
     if (process.env.POOL_ID) {
@@ -40,7 +74,6 @@ export function endedSuccessFully(results: RowData[]) {
     const taxEndingBal = results[results.length - 1].taxBal.replace('$', '');
     const brokerageEndingBal = results[results.length - 1].brokerageBal.replace('$', '');
     const winLose = parseInt(taxEndingBal) > 0 || parseInt(brokerageEndingBal) > 0;
-    console.log(`${winLose ? 'win' : 'LOSE'} taxEndingBal: ${taxEndingBal}  brokerageEndingBal: ${brokerageEndingBal}`);
     return winLose
 }
 
@@ -55,54 +88,10 @@ export function getSuccessPercent(simulations: RowData[][]) {
     return ((numSuccess / simulations.length) * 100);
 }
 
-export function getBrokerageAccountWithSmallestNonZeroBalance(accounts: Account[], currentDateIndex: number, balances: any) {
-
-    let idxSmallest = 0;
-    let smallestBal = null;
-    let i = 0;
-    for (const account of accounts) {
-        if (account.taxAdvantaged === 0) {
-            if (smallestBal === null) {
-                smallestBal = balances[account.id][(currentDateIndex - 1).toString()];
-            }
-            const bal: number = balances[account.id][(currentDateIndex - 1).toString()];
-            if (bal > 0 && bal <= smallestBal) {
-                smallestBal = bal;
-                idxSmallest = i;
-            }
-
-        }
-        i += 1;
-    }
-
-    return accounts[idxSmallest];
-}
-
-export function getTaxAccountWithSmallestNonZeroBalance(accounts: Account[], currentDateIndex: number, balances: any) {
-    let idxSmallest = 0;
-    let smallestBal = null;
-    let i = 0;
+export function isMoneyInAnyTaxAccounts(accounts: Account[], currentDateIndex: number, balances: BalanceData) {
     for (const account of accounts) {
         if (account.taxAdvantaged === 1) {
-            if (smallestBal === null) {
-                smallestBal = balances[account.id][(currentDateIndex - 1).toString()];
-            }
-            const bal: number = balances[account.id][(currentDateIndex - 1).toString()];
-            if (bal > 0 && bal <= smallestBal) {
-                smallestBal = bal;
-                idxSmallest = i;
-            }
-
-        }
-        i += 1;
-    }
-    return accounts[idxSmallest]
-}
-
-export function isMoneyInAnyTaxAccounts(accounts: Account[], currentDateIndex: number, balances: any) {
-    for (const account of accounts) {
-        if (account.taxAdvantaged === 1) {
-            if (balances[account.id][(currentDateIndex - 1).toString()] > 0) {
+            if (balances[account.id][currentDateIndex - 1] > 0) {
                 return true;
             }
         }
