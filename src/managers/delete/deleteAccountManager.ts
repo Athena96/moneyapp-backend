@@ -29,7 +29,7 @@ export const deleteAccount = async (event: DeleteEvent, ddbHelper: DynamoDBHelpe
 
     // delete cognito user
     console.log(`deleting user: ${user}`)
-    // await cognitoHelper.deleteUser(user);
+    await cognitoHelper.deleteUser(user);
 
     console.log('done')
 

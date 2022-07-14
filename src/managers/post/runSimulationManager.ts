@@ -13,8 +13,6 @@ import { SimulationStatus } from '../../models/SimulationTypes';
 import { PostEvent } from './postManager';
 import { BalanceData } from '../../models/MonteCarloTypes';
 
-
-
 export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHelper, finnhubClient: any): Promise<string | void> => {
     // let users: UserType[] = [];
     // try {

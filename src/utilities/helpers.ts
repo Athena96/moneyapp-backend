@@ -1,5 +1,6 @@
 import { Account } from "../models/Account";
 import { Budget } from "../models/Budget";
+import { CategoryTypes } from "../models/CategoryTypes";
 import { Event } from "../models/Event";
 import { BalanceData } from "../models/MonteCarloTypes";
 import { MonteCarloRowData, RowData } from "./MonteCarlo";
@@ -231,4 +232,10 @@ export function getActiveEvents(date: Date, account: Account, events: Event[]) {
         }
     }
     return activeEvents;
+}
+
+export function getBudgetsSpendingOfType(budgets: Budget[], type: CategoryTypes) {
+    return budgets ? budgets.map((budget: Budget) => {
+        return budget.type === type ? budget.getSum() : 0;
+    }).reduce((prev, curr) => prev + curr, 0) : 0.0;
 }

@@ -10,7 +10,8 @@ import {
     getActiveEvents,
     getAccountWithSmallestNonZeroBalance,
     isMoneyInAnyTaxAccounts,
-    shuffleArray
+    shuffleArray,
+    getBudgetsSpendingOfType
 } from "./helpers";
 import { BalanceData } from "../models/MonteCarloTypes";
 
@@ -141,21 +142,33 @@ export function simulate(
         // let distributionOfReturns = getNormalDistributionOfReturns(dates.length, mixMean, mixVariance).map((o) => {
         //     return o / 12.0 / 100.0
         // });
+        const budgets = monteCarloInputs.budgets || [];
+        const incomeExpenseDeltaData: number[] = []
+        for (let i = 0; i < dates.length; i += 1) {
+            const date = dates[i];
+            const currentBudgets = getActiveBudgets(date, budgets || [])
+            const monthlySpending = getBudgetsSpendingOfType(currentBudgets, CategoryTypes.Expense);
+            const monthlyIncome = getBudgetsSpendingOfType(currentBudgets, CategoryTypes.Income);
+            const incomeExpenseDelta = monthlyIncome - monthlySpending;
+            incomeExpenseDeltaData.push(incomeExpenseDelta);
+        }
+
 
         setOfSimulations.push(projectWithReturn(
             newBalData,
             monteCarloInputs,
             dateIm59,
             dates,
-            distributionOfReturns));
+            distributionOfReturns,
+            incomeExpenseDeltaData));
     }
 
     return setOfSimulations;
 }
 
-export function projectWithReturn(balances: BalanceData, monteCarloInputs: MonteCarloInputs, dateIm59: Date, dates: Date[], growRates: number[]) {
+export function projectWithReturn(balances: BalanceData, monteCarloInputs: MonteCarloInputs, dateIm59: Date, dates: Date[], growRates: number[], incomeExpenseDeltaData: number[]) {
     const events = monteCarloInputs.events || [];
-    const budgets = monteCarloInputs.budgets || [];
+    // const budgets = monteCarloInputs.budgets || [];
     const accounts = monteCarloInputs.accounts;
 
     let data: RowData[] = []
@@ -168,15 +181,7 @@ export function projectWithReturn(balances: BalanceData, monteCarloInputs: Monte
         let brokBal = 0.0
         let taxBal = 0.0
 
-        const currentBudgets = getActiveBudgets(date, budgets || [])
-        const monthlySpending = budgets ? currentBudgets.map((budget: Budget) => {
-            return budget.type === CategoryTypes.Expense ? budget.getSum() : 0;
-        }).reduce((prev, curr) => prev + curr, 0) : 0.0;
-        const monthlyIncome = budgets ? currentBudgets.map((budget: Budget) => {
-            return budget.type === CategoryTypes.Income ? budget.getSum() : 0;
-        }).reduce((prev, curr) => prev + curr, 0) : 0.0;
-        const incomeExpenseDelta = monthlyIncome - monthlySpending;
-
+        const incomeExpenseDelta: number = incomeExpenseDeltaData[i];
         for (const account of accounts) {
             const growth = growRates[i];
             finalG = (growth * 100).toFixed(2).toString();
