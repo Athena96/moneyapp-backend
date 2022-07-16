@@ -1,11 +1,59 @@
+import { Worker, workerData } from "worker_threads";
 import { Account } from "../models/Account";
 import { Budget } from "../models/Budget";
 import { CategoryTypes } from "../models/CategoryTypes";
 import { Event } from "../models/Event";
 import { BalanceData } from "../models/MonteCarloTypes";
-import { MonteCarloRowData, RowData } from "./MonteCarlo";
+import { MonteCarloInputs, MonteCarloRowData, RowData } from "./MonteCarlo";
+
+export type MyWorkerDataType = {
+    monteCarloInputs: MonteCarloInputs,
+    balances: BalanceData,
+    dates: Date[],
+    steps: number,
+    vtiMean: number,
+    bndMean: number,
+    VTI_VARIANCE: number,
+    BND_VARIANCE: number
+}
+export function createWorker(thread: number, MyWorkerData: MyWorkerDataType) {
+    console.log('createWorker ' + thread);
+
+    return new Promise(function(resolve,reject) {
+        console.log('Promise ');
+
+        // '/Users/jaredfranzone/dev/moneyapp-backend/src/utilities/ThreadWorker.js'
+        var w = new Worker(`${__dirname}/ThreadWorker.js`, {
+            workerData: {
+                path: `${__dirname}/ThreadWorker.ts`,
+
+                MyWorkerData
+            }
+        });
 
 
+        w.on("message", (result) => {
+
+           console.log('done message')
+
+            resolve(result);
+
+        });
+        w.on("error", (result) => {
+            console.log('done error')
+            console.log(result)
+
+            reject(result.data);
+
+        });
+        w.on("exit", (code) => {
+            console.log('done exit')
+
+            reject(code);
+
+        });
+    })
+}
 
 export function getAccountWithSmallestNonZeroBalance(accounts: Account[], currentDateIndex: number, balances: BalanceData, taxOrBrok: number) {
     let idxSmallest = 0;
@@ -72,8 +120,8 @@ export function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function endedSuccessFully(results: RowData[]) {
-    const taxEndingBal = results[results.length - 1].taxBal.replace('$', '');
-    const brokerageEndingBal = results[results.length - 1].brokerageBal.replace('$', '');
+    const taxEndingBal = results[results.length - 1].taxBal
+    const brokerageEndingBal = results[results.length - 1].brokerageBal
     const winLose = parseInt(taxEndingBal) > 0 || parseInt(brokerageEndingBal) > 0;
     return winLose
 }
@@ -235,6 +283,7 @@ export function getActiveEvents(date: Date, account: Account, events: Event[]) {
 }
 
 export function getBudgetsSpendingOfType(budgets: Budget[], type: CategoryTypes) {
+    console.log(JSON.stringify(budgets))
     return budgets ? budgets.map((budget: Budget) => {
         return budget.type === type ? budget.getSum() : 0;
     }).reduce((prev, curr) => prev + curr, 0) : 0.0;
