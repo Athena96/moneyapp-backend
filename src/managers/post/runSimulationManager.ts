@@ -109,6 +109,8 @@ export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHe
                 VTI_VARIANCE,
                 BND_VARIANCE);
 
+                console.log('simulations: ' + simulations.length)
+
             // 5. calculate success percent from simulations
             const successPercent = getSuccessPercent(simulations);
             console.log('successPercent: ' + successPercent);

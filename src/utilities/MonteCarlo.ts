@@ -75,37 +75,37 @@ export function simulate(
     const startCash = parseFloat(startAllocations.cash) / 100.0;
 
     // #todo noany
-    let assetAllocationOverTime: any[] | null = null;
+    // let assetAllocationOverTime: any[] | null = null;
 
 
-    if (monteCarloInputs.input.assetAllocation.endAllocations) {
-        assetAllocationOverTime = [];
-        const endAllocations = monteCarloInputs.input.assetAllocation.endAllocations;
-        const endStocks = parseFloat(endAllocations.equities) / 100.0;
-        const endBonds = parseFloat(endAllocations.bonds) / 100.0;
-        const endCash = parseFloat(endAllocations.cash) / 100.0;
+    // if (monteCarloInputs.input.assetAllocation.endAllocations) {
+    //     assetAllocationOverTime = [];
+    //     const endAllocations = monteCarloInputs.input.assetAllocation.endAllocations;
+    //     const endStocks = parseFloat(endAllocations.equities) / 100.0;
+    //     const endBonds = parseFloat(endAllocations.bonds) / 100.0;
+    //     const endCash = parseFloat(endAllocations.cash) / 100.0;
     
     
-        assetAllocationOverTime.push({
-            'stock': startStocks,     
-            'bond': startBonds,
-            'cash': startCash
-        })
-        const totalSteps = (dates.length)
-        for (let step = 1; step < totalSteps; step += 1) {
-            const stockDiff = (startStocks - endStocks) / (totalSteps);
-            const bondDiff = (startBonds - endBonds) / (totalSteps);
-            const cashDiff = (startCash - endCash) / (totalSteps);
+    //     assetAllocationOverTime.push({
+    //         'stock': startStocks,     
+    //         'bond': startBonds,
+    //         'cash': startCash
+    //     })
+    //     const totalSteps = (dates.length)
+    //     for (let step = 1; step < totalSteps; step += 1) {
+    //         const stockDiff = (startStocks - endStocks) / (totalSteps);
+    //         const bondDiff = (startBonds - endBonds) / (totalSteps);
+    //         const cashDiff = (startCash - endCash) / (totalSteps);
             
-            // #noany
-            const prev: any = assetAllocationOverTime[step-1];
-            assetAllocationOverTime.push({
-                'stock': prev['stock'] - stockDiff,           
-                'bond': prev['bond'] - bondDiff,
-                'cash': prev['cash'] - cashDiff
-            });
-        }
-    }
+    //         // #noany
+    //         const prev: any = assetAllocationOverTime[step-1];
+    //         assetAllocationOverTime.push({
+    //             'stock': prev['stock'] - stockDiff,           
+    //             'bond': prev['bond'] - bondDiff,
+    //             'cash': prev['cash'] - cashDiff
+    //         });
+    //     }
+    // }
 
     const dateIm59 = new Date(monteCarloInputs.input.birthday);
     dateIm59.setFullYear(dateIm59.getFullYear() + 59);
@@ -117,26 +117,26 @@ export function simulate(
         }
 
         let distributionOfReturns: number[] = []
-        if (assetAllocationOverTime) {
-            for (let j = 0; j < assetAllocationOverTime.length; j += 1) {
-                const stocks = assetAllocationOverTime[j]['stock'];
-                const bonds = assetAllocationOverTime[j]['bond'];
-                const cash = assetAllocationOverTime[j]['cash'];
-                const mixVariance = stocks * vtiVariance + bonds * bondVariance + cash * 0;
-                const mixMean = stocks * vtiMean + bonds * bondMean + cash * 0;
-                let currDistro = getNormalDistributionOfReturns(dates.length, mixMean, mixVariance).map((o) => {
-                        return o / 12.0 / 100.0
-                });
-                distributionOfReturns.push(currDistro[i]);
-            }
+        // if (assetAllocationOverTime) {
+        //     for (let j = 0; j < assetAllocationOverTime.length; j += 1) {
+        //         const stocks = assetAllocationOverTime[j]['stock'];
+        //         const bonds = assetAllocationOverTime[j]['bond'];
+        //         const cash = assetAllocationOverTime[j]['cash'];
+        //         const mixVariance = stocks * vtiVariance + bonds * bondVariance + cash * 0;
+        //         const mixMean = stocks * vtiMean + bonds * bondMean + cash * 0;
+        //         let currDistro = getNormalDistributionOfReturns(dates.length, mixMean, mixVariance).map((o) => {
+        //                 return o / 12.0 / 100.0
+        //         });
+        //         distributionOfReturns.push(currDistro[i]);
+        //     }
 
-        } else {
+        // } else {
             const mixVariance = startStocks * vtiVariance + startBonds * bondVariance + startCash * 0;
             const mixMean = startStocks * vtiMean + startBonds * bondMean + startCash * 0;
             distributionOfReturns = getNormalDistributionOfReturns(dates.length, mixMean, mixVariance).map((o) => {
                     return o / 12.0 / 100.0
                 });
-        }
+        // }
 
 
         // let distributionOfReturns = getNormalDistributionOfReturns(dates.length, mixMean, mixVariance).map((o) => {
