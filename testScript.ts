@@ -4,7 +4,8 @@ const postHandler = require('./src/handlers/post')
 async function run() {
     const it = 'italianstallion26.21@gmail.com';
     const jared = 'jaredfranzone@gmail.com';
-    const res = await postHandler.handler({email: jared, postCommand: "RunSimulation" }, null);
+    const zen = 'zenspending@gmail.com';
+    const res = await postHandler.handler({email: zen, postCommand: "RunSimulation" }, null);
 }
 run().then(() => {
     console.log('done')

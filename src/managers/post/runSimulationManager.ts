@@ -97,6 +97,7 @@ export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHe
             endDate.setFullYear(endDate.getFullYear() + 100);
 
             console.log('allocations: ' + JSON.stringify(monteCarloInputs.input.assetAllocation))
+            console.log('accounts: ' + JSON.stringify(monteCarloInputs.accounts))
 
             const dates = dateRange(startDate, endDate);
             const simulations = simulate(

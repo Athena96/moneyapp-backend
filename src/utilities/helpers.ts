@@ -16,6 +16,14 @@ export function getAccountWithSmallestNonZeroBalance(accounts: Account[], curren
         return account.taxAdvantaged === taxOrBrok
     })
 
+    if (taxAccounts.length === 1) {
+        return taxAccounts[0];
+    }
+    
+    if (taxAccounts.length === 0) {
+        return null;
+    }
+
     for (const account of taxAccounts) {
         const bal: number = balances[account.id][currentDateIndex - 1];
         if (bal > 0) {
@@ -34,7 +42,7 @@ export function getAccountWithSmallestNonZeroBalance(accounts: Account[], curren
         i += 1;
     }
 
-    return taxAccounts[idxSmallest];
+    return taxAccounts[idxSmallest] === undefined ? null : taxAccounts[idxSmallest];
 }
 
 

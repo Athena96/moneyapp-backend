@@ -14,6 +14,7 @@ import {
     getBudgetsSpendingOfType
 } from "./helpers";
 import { BalanceData } from "../models/MonteCarloTypes";
+import { JsonSchemaType } from "@aws-cdk/aws-apigateway";
 
 export type MonteCarloInputs = {
     accounts: Account[],
@@ -256,16 +257,19 @@ export function use(account: Account, accounts: Account[], currentDate: Date, cu
         let currAcnt = getAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances, 0);
         if (currAcnt === null) {
             currAcnt = getAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances, 1); // could be zero for sake of math.
+            if (currAcnt === null) {
+                return true;
+            }
         }
         return currAcnt.name === account.name;
     } else {
         // use 401k till empty
         if (isMoneyInAnyTaxAccounts(accounts, currentDateIndex, balances)) {
             const acnt = getAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances, 1);
-            return acnt.name === account.name;
+            return acnt && acnt.name === account.name;
         } else {
             const brokAcnt = getAccountWithSmallestNonZeroBalance(accounts, currentDateIndex, balances, 0);
-            return brokAcnt.name === account.name;
+            return brokAcnt && brokAcnt.name === account.name;
         }
     }
 }
