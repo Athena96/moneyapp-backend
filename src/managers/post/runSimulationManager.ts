@@ -67,14 +67,20 @@ export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHe
 
             // 2. fetch stock data for my assets
             let computedAssets: ComputedAsset[] = [];
-            try {
-                for (const asset of monteCarloInputs.assets) {
-                    const stockPrice = await FinnHubClientHelper.computeAsset(asset, finnhubClient);
-                    const price = asset.hasIndexData ? Number((stockPrice * asset.quantity).toFixed(2)) : asset.quantity;
-                    computedAssets.push({ asset, price });
+            for (const asset of monteCarloInputs.assets) {
+                if (asset.hasIndexData === 1) {
+                    let assetPrice: number;
+                    try {
+                        assetPrice = await FinnHubClientHelper.computeAsset(asset, finnhubClient);
+                    } catch (e) {
+                        assetPrice = 0.0;
+                        console.error(e)
+                    }
+                    const totalEquityValue = Number((assetPrice * asset.quantity).toFixed(2))
+                    computedAssets.push({ asset, price: totalEquityValue });
+                } else {
+                    computedAssets.push({ asset, price: asset.quantity });
                 }
-            } catch (e) {
-                console.error(e)
             }
 
             // 3. compute starting balance
