@@ -25,43 +25,42 @@ export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHe
     //     email: inputEmail,
     //     postCommand: inputCommand
     // }
-
     const email = event.email!;
 
-    // for (const user of users) {
+    try {
+
+        // for (const user of users) {
         // 1. pull events, budgets, inputs, accounts, startDt, endDt, dateim59, retireDate
         let monteCarloInputs: MonteCarloInputs | null = null;
-        try {
-            // const email = cognitoHelper.getEmail(user);
-            // if (userCalledEmail && email !== userCalledEmail)
-                // continue;
-            console.log('Running Simulation For: ' + email);
-            console.log('set Simulation as RUNNING');
-            await SimulationDataAccess.markSimulationAsRunning(dynamoDBHelper, email);
 
-            const simulation = await SimulationDataAccess.fetchSelectedSimulationForUser(dynamoDBHelper, email);
-            if (simulation === null) {
-                console.log('no simulation for user, going to next user');
-                return
-            }
-            const accounts = await AccountDataAccess.fetchAccounts(dynamoDBHelper, simulation.id);
-            if (accounts === null || accounts.length === 0) {
-                console.log('no accounts for user, going to next user');
-                return;
-            }
-            const budgets = await BudgetDataAccess.fetchBudgets(dynamoDBHelper, simulation.id);
-            if (budgets === null || budgets.length === 0) {
-                console.log('no budgets for user, going to next user');
-                return;
-            }
-            const events = await EventDataAccess.fetchEvents(dynamoDBHelper, simulation.id);
-            const input = await InputDataAccess.fetchInputs(dynamoDBHelper, simulation.id);
-            const assets = await AssetDataAccess.fetchAssets(dynamoDBHelper, simulation.id);
+        // const email = cognitoHelper.getEmail(user);
+        // if (userCalledEmail && email !== userCalledEmail)
+        // continue;
+        console.log('Running Simulation For: ' + email);
+        console.log('set Simulation as RUNNING');
+        await SimulationDataAccess.markSimulationAsRunning(dynamoDBHelper, email);
 
-            monteCarloInputs = { accounts, budgets, events, input, assets, simulation }
-        } catch (e) {
-            console.error(e)
+        const simulation = await SimulationDataAccess.fetchSelectedSimulationForUser(dynamoDBHelper, email);
+        if (simulation === null) {
+            console.log('no simulation for user, going to next user');
+            return
         }
+        const accounts = await AccountDataAccess.fetchAccounts(dynamoDBHelper, simulation.id);
+        if (accounts === null || accounts.length === 0) {
+            console.log('no accounts for user, going to next user');
+            return;
+        }
+        const budgets = await BudgetDataAccess.fetchBudgets(dynamoDBHelper, simulation.id);
+        if (budgets === null || budgets.length === 0) {
+            console.log('no budgets for user, going to next user');
+            return;
+        }
+        const events = await EventDataAccess.fetchEvents(dynamoDBHelper, simulation.id);
+        const input = await InputDataAccess.fetchInputs(dynamoDBHelper, simulation.id);
+        const assets = await AssetDataAccess.fetchAssets(dynamoDBHelper, simulation.id);
+
+        monteCarloInputs = { accounts, budgets, events, input, assets, simulation }
+
 
         if (monteCarloInputs) {
 
@@ -116,7 +115,7 @@ export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHe
                 VTI_VARIANCE,
                 BND_VARIANCE);
 
-                console.log('simulations: ' + simulations.length)
+            console.log('simulations: ' + simulations.length)
 
             // 5. calculate success percent from simulations
             const successPercent = getSuccessPercent(simulations);
@@ -139,24 +138,22 @@ export const runSimulation = async (event: PostEvent, dynamoDBHelper: DynamoDBHe
             // const aggregatedStats = joinScenarios(maxScenario, minScenario, avgOfAllScenarios, assumedAvgScenario);
 
             // 7. update DDB
-            try {
-                await SimulationDataAccess.updateSimulation(
-                    dynamoDBHelper,
-                    monteCarloInputs.simulation,
-                    new Date(),
-                    successPercent,
-                    SimulationStatus.Done,
-                    formattedData);
-            } catch (e) {
-                console.error(e)
-            }
+            await SimulationDataAccess.updateSimulation(
+                dynamoDBHelper,
+                monteCarloInputs.simulation,
+                new Date(),
+                successPercent,
+                SimulationStatus.Done,
+                formattedData);
 
             console.log('DONE');
         }
+    } catch (e) {
+        console.error(e);
+        await SimulationDataAccess.markSimulationAsDone(dynamoDBHelper, email);
+    }
 
     // }
 
-
-        return "done"
-
+    return "done"
 };

@@ -25,6 +25,11 @@ export class SimulationDataAccess {
         await this.setSimulationStatus(dynamoDBHelper, sim.id, SimulationStatus.Running);
     }
 
+    static async markSimulationAsDone(dynamoDBHelper: DynamoDBHelper, user: string) {
+        const sim = await this.fetchSelectedSimulationForUser(dynamoDBHelper, user);
+        await this.setSimulationStatus(dynamoDBHelper, sim.id, SimulationStatus.Done);
+    }
+
     static async fetchAllSimulationsForUser(dynamoDBHelper: DynamoDBHelper, user: string) {
         let fetchedSimulations: Simulation[] = [];
         fetchedSimulations = await dynamoDBHelper.fetchAllOf<Simulation>('Simulation', this.simulationsMapperFunction, null);
