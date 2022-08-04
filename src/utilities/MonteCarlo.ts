@@ -14,7 +14,6 @@ import {
     getBudgetsSpendingOfType
 } from "./helpers";
 import { BalanceData } from "../models/MonteCarloTypes";
-import { JsonSchemaType } from "@aws-cdk/aws-apigateway";
 
 export type MonteCarloInputs = {
     accounts: Account[],
@@ -68,8 +67,6 @@ export function simulate(
     bondMean: number,
     vtiVariance: number,
     bondVariance: number) {
-
-
     const startAllocations = monteCarloInputs.input.assetAllocation.startAllocations;
     const startStocks = parseFloat(startAllocations.equities) / 100.0;
     const startBonds = parseFloat(startAllocations.bonds) / 100.0;
@@ -85,8 +82,7 @@ export function simulate(
     //     const endStocks = parseFloat(endAllocations.equities) / 100.0;
     //     const endBonds = parseFloat(endAllocations.bonds) / 100.0;
     //     const endCash = parseFloat(endAllocations.cash) / 100.0;
-    
-    
+
     //     assetAllocationOverTime.push({
     //         'stock': startStocks,     
     //         'bond': startBonds,
@@ -97,7 +93,7 @@ export function simulate(
     //         const stockDiff = (startStocks - endStocks) / (totalSteps);
     //         const bondDiff = (startBonds - endBonds) / (totalSteps);
     //         const cashDiff = (startCash - endCash) / (totalSteps);
-            
+
     //         // #noany
     //         const prev: any = assetAllocationOverTime[step-1];
     //         assetAllocationOverTime.push({
@@ -108,9 +104,21 @@ export function simulate(
     //     }
     // }
 
+    const budgets = monteCarloInputs.budgets || [];
+    const incomeExpenseDeltaData: number[] = []
+    for (let i = 0; i < dates.length; i += 1) {
+        const date = dates[i];
+        const currentBudgets = getActiveBudgets(date, budgets || [])
+        const monthlySpending = getBudgetsSpendingOfType(currentBudgets, CategoryTypes.Expense);
+        const monthlyIncome = getBudgetsSpendingOfType(currentBudgets, CategoryTypes.Income);
+        const incomeExpenseDelta = monthlyIncome - monthlySpending;
+        incomeExpenseDeltaData.push(incomeExpenseDelta);
+    }
+
     const dateIm59 = new Date(monteCarloInputs.input.birthday);
     dateIm59.setFullYear(dateIm59.getFullYear() + 59);
     const setOfSimulations: RowData[][] = [];
+
     for (let i = 0; i < steps; i += 1) {
         const newBalData: BalanceData = {}
         for (const k of Object.keys(balances)) {
@@ -132,28 +140,16 @@ export function simulate(
         //     }
 
         // } else {
-            const mixVariance = startStocks * vtiVariance + startBonds * bondVariance + startCash * 0;
-            const mixMean = startStocks * vtiMean + startBonds * bondMean + startCash * 0;
-            distributionOfReturns = getNormalDistributionOfReturns(dates.length, mixMean, mixVariance).map((o) => {
-                    return o / 12.0 / 100.0
-                });
+        const mixVariance = startStocks * vtiVariance + startBonds * bondVariance + startCash * 0;
+        const mixMean = startStocks * vtiMean + startBonds * bondMean + startCash * 0;
+        distributionOfReturns = getNormalDistributionOfReturns(dates.length, mixMean, mixVariance).map((o) => {
+            return o / 12.0 / 100.0
+        });
         // }
-
 
         // let distributionOfReturns = getNormalDistributionOfReturns(dates.length, mixMean, mixVariance).map((o) => {
         //     return o / 12.0 / 100.0
         // });
-        const budgets = monteCarloInputs.budgets || [];
-        const incomeExpenseDeltaData: number[] = []
-        for (let i = 0; i < dates.length; i += 1) {
-            const date = dates[i];
-            const currentBudgets = getActiveBudgets(date, budgets || [])
-            const monthlySpending = getBudgetsSpendingOfType(currentBudgets, CategoryTypes.Expense);
-            const monthlyIncome = getBudgetsSpendingOfType(currentBudgets, CategoryTypes.Income);
-            const incomeExpenseDelta = monthlyIncome - monthlySpending;
-            incomeExpenseDeltaData.push(incomeExpenseDelta);
-        }
-
 
         setOfSimulations.push(projectWithReturn(
             newBalData,
@@ -189,7 +185,7 @@ export function projectWithReturn(balances: BalanceData, monteCarloInputs: Monte
 
             if (i > 0) {
                 // grow
-                balances[account.id].push(balances[account.id][i-1] > 0 ? balances[account.id][i-1] + growth * balances[account.id][i-1] : 0.0);
+                balances[account.id].push(balances[account.id][i - 1] > 0 ? balances[account.id][i - 1] + growth * balances[account.id][i - 1] : 0.0);
 
                 // contribute or use
                 if (incomeExpenseDelta > 0) {
@@ -211,8 +207,8 @@ export function projectWithReturn(balances: BalanceData, monteCarloInputs: Monte
                 balances[account.id][i] += ((isExpense ? -1 : 1) * event.category.getValue());
                 eventDesc += ` | `;
             }
-
-            account.taxAdvantaged === 1 ? taxBal += balances[account.id][i] :  brokBal += balances[account.id][i];
+            
+            account.taxAdvantaged === 1 ? taxBal += balances[account.id][i] : brokBal += balances[account.id][i];
         }
 
         data.push({
@@ -227,7 +223,6 @@ export function projectWithReturn(balances: BalanceData, monteCarloInputs: Monte
             incomeExpenses: `${incomeExpenseDelta.toFixed(2)}`
         });
     }
-
     return data;
 }
 

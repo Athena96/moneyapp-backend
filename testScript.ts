@@ -8,5 +8,5 @@ async function run() {
     const res = await postHandler.handler({email: jared, postCommand: "RunSimulation" }, null);
 }
 run().then(() => {
-    console.log('done')
+    console.log('')
 })
