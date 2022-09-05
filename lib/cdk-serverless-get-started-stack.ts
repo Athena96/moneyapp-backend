@@ -70,6 +70,13 @@ export class CdkServerlessGetStartedStack extends cdk.Stack {
       role: postFunctionLambdaRole
     });
 
+    // const version = postFunction.currentVersion
+    // new lambda.Alias(this, 'LiveAlias', {
+    //   aliasName: "live",
+    //   version: version,
+    //   provisionedConcurrentExecutions: 2
+    // });
+
     const deleteFunction = new lambda.Function(this, "DeleteHandlerFunction", {
       functionName: 'DeleteHandlerFunction',
       runtime: lambda.Runtime.NODEJS_14_X,
